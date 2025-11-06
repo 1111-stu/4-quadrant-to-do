@@ -1,0 +1,1065 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quadrant Todo List - MotherDuck Style</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        }
+
+        /* Button styles with shadow effect */
+        .btn-blue {
+            background-color: #6FC2FF;
+            border: 2px solid #383838;
+            color: #383838;
+            position: relative;
+            transition: transform 120ms ease-in-out, box-shadow 120ms ease-in-out;
+        }
+
+        .btn-blue:hover {
+            transform: translate(-2px, -2px);
+            box-shadow: 4px 4px 0px 0px #383838;
+        }
+
+        .btn-blue:active {
+            transform: translate(0, 0);
+            box-shadow: 2px 2px 0px 0px #383838;
+        }
+
+        .btn-white {
+            background-color: white;
+            border: 2px solid #383838;
+            color: #383838;
+            position: relative;
+            transition: transform 120ms ease-in-out, box-shadow 120ms ease-in-out;
+        }
+
+        .btn-white:hover {
+            transform: translate(-2px, -2px);
+            box-shadow: 4px 4px 0px 0px #383838;
+        }
+
+        .btn-white:active {
+            transform: translate(0, 0);
+            box-shadow: 2px 2px 0px 0px #383838;
+        }
+
+        .btn-danger {
+            background-color: #FF6B6B;
+            border: 2px solid #383838;
+            color: white;
+            position: relative;
+            transition: transform 120ms ease-in-out, box-shadow 120ms ease-in-out;
+        }
+
+        .btn-danger:hover {
+            transform: translate(-2px, -2px);
+            box-shadow: 4px 4px 0px 0px #383838;
+        }
+
+        .btn-danger:active {
+            transform: translate(0, 0);
+            box-shadow: 2px 2px 0px 0px #383838;
+        }
+
+        /* Custom checkbox */
+        .custom-checkbox {
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border: 2px solid #383838;
+            border-radius: 3px;
+            background: white;
+            cursor: pointer;
+            position: relative;
+            flex-shrink: 0;
+        }
+
+        .custom-checkbox:checked {
+            background: #383838;
+        }
+
+        .custom-checkbox:checked::after {
+            content: '✓';
+            position: absolute;
+            color: white;
+            font-size: 14px;
+            top: -2px;
+            left: 2px;
+            font-weight: bold;
+        }
+
+        /* Task item styles */
+        .task-item {
+            transition: all 150ms ease-in-out;
+        }
+
+        .task-item:hover {
+            background-color: #F4EFEA;
+        }
+
+        .task-item.dragging {
+            opacity: 0.5;
+        }
+
+        .task-item.completed {
+            opacity: 0.6;
+        }
+
+        .task-item.completed .task-text {
+            text-decoration: line-through;
+        }
+
+        /* Quadrant colors */
+        .quadrant-urgent-important {
+            border-left: 4px solid #FF6B6B;
+        }
+
+        .quadrant-not-urgent-important {
+            border-left: 4px solid #6FC2FF;
+        }
+
+        .quadrant-urgent-not-important {
+            border-left: 4px solid #FFD500;
+        }
+
+        .quadrant-not-urgent-not-important {
+            border-left: 4px solid #4DD4D0;
+        }
+
+        /* Drop zone highlight */
+        .drop-zone {
+            height: 300px;
+            overflow-y: auto;
+            transition: background-color 150ms ease-in-out;
+            padding-right: 8px;
+            scrollbar-width: thin;
+            scrollbar-color: #F4EFEA transparent;
+        }
+
+        /* Custom Scrollbar for Webkit browsers */
+        .drop-zone::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .drop-zone::-webkit-scrollbar-track {
+            background: transparent;
+            margin: 4px 0;
+        }
+
+        .drop-zone::-webkit-scrollbar-thumb {
+            background: #F4EFEA;
+            border-radius: 3px;
+            transition: background-color 120ms ease-in-out;
+        }
+
+        .drop-zone::-webkit-scrollbar-thumb:hover {
+            background: #E6DFD8;
+        }
+
+        .drop-zone::-webkit-scrollbar-thumb:active {
+            background: #D9D1C9;
+        }
+
+        .drop-zone.drag-over {
+            background-color: #F4EFEA;
+            border: 2px dashed #383838;
+        }
+
+        /* Empty state */
+        .empty-state {
+            opacity: 0.4;
+        }
+    </style>
+</head>
+<body class="bg-[#F4EFEA] text-[#383838] antialiased">
+    <!-- Header -->
+    <header class="bg-[#FFD500] border-b-2 border-[#383838]">
+        <div class="max-w-7xl mx-auto px-6 py-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h1 class="text-4xl font-bold tracking-tight mb-2 text-[#383838]">EISENHOWER MATRIX</h1>
+                    <p class="text-base text-[#383838]/80">Organize tasks by urgency and importance</p>
+                </div>
+                <div class="flex gap-3">
+                    <button onclick="clearAllTasks()" class="btn-white px-6 py-3 rounded-none font-bold text-sm uppercase">
+                        CLEAR ALL
+                    </button>
+                    <button onclick="toggleStatistics()" class="btn-blue px-6 py-3 rounded-none font-bold text-sm uppercase">
+                        📊 STATISTICS
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="max-w-7xl mx-auto px-6 py-12">
+        <!-- Quadrant Grid -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <!-- Quadrant 1: Urgent & Important -->
+            <div class="bg-white border-2 border-[#383838] rounded p-6">
+                <div class="flex items-center justify-between mb-6">
+                    <div>
+                        <div class="flex items-center gap-3 mb-2">
+                            <div class="w-4 h-4 bg-[#FF6B6B] border-2 border-[#383838]"></div>
+                            <h2 class="text-2xl font-bold tracking-tight">DO FIRST</h2>
+                        </div>
+                        <p class="text-sm text-gray-600">Urgent & Important</p>
+                    </div>
+                    <button onclick="showAddTaskModal('urgent-important')" class="btn-blue px-4 py-2 rounded-none font-bold text-xs uppercase">
+                        + ADD
+                    </button>
+                </div>
+
+                <div id="quadrant-urgent-important" class="drop-zone space-y-3" data-quadrant="urgent-important">
+                    <!-- Tasks will be inserted here -->
+                </div>
+            </div>
+
+            <!-- Quadrant 2: Not Urgent but Important -->
+            <div class="bg-white border-2 border-[#383838] rounded p-6">
+                <div class="flex items-center justify-between mb-6">
+                    <div>
+                        <div class="flex items-center gap-3 mb-2">
+                            <div class="w-4 h-4 bg-[#6FC2FF] border-2 border-[#383838]"></div>
+                            <h2 class="text-2xl font-bold tracking-tight">SCHEDULE</h2>
+                        </div>
+                        <p class="text-sm text-gray-600">Not Urgent but Important</p>
+                    </div>
+                    <button onclick="showAddTaskModal('not-urgent-important')" class="btn-blue px-4 py-2 rounded-none font-bold text-xs uppercase">
+                        + ADD
+                    </button>
+                </div>
+
+                <div id="quadrant-not-urgent-important" class="drop-zone space-y-3" data-quadrant="not-urgent-important">
+                    <!-- Tasks will be inserted here -->
+                </div>
+            </div>
+
+            <!-- Quadrant 3: Urgent but Not Important -->
+            <div class="bg-white border-2 border-[#383838] rounded p-6">
+                <div class="flex items-center justify-between mb-6">
+                    <div>
+                        <div class="flex items-center gap-3 mb-2">
+                            <div class="w-4 h-4 bg-[#FFD500] border-2 border-[#383838]"></div>
+                            <h2 class="text-2xl font-bold tracking-tight">DELEGATE</h2>
+                        </div>
+                        <p class="text-sm text-gray-600">Urgent but Not Important</p>
+                    </div>
+                    <button onclick="showAddTaskModal('urgent-not-important')" class="btn-blue px-4 py-2 rounded-none font-bold text-xs uppercase">
+                        + ADD
+                    </button>
+                </div>
+
+                <div id="quadrant-urgent-not-important" class="drop-zone space-y-3" data-quadrant="urgent-not-important">
+                    <!-- Tasks will be inserted here -->
+                </div>
+            </div>
+
+            <!-- Quadrant 4: Not Urgent & Not Important -->
+            <div class="bg-white border-2 border-[#383838] rounded p-6">
+                <div class="flex items-center justify-between mb-6">
+                    <div>
+                        <div class="flex items-center gap-3 mb-2">
+                            <div class="w-4 h-4 bg-[#4DD4D0] border-2 border-[#383838]"></div>
+                            <h2 class="text-2xl font-bold tracking-tight">ELIMINATE</h2>
+                        </div>
+                        <p class="text-sm text-gray-600">Not Urgent & Not Important</p>
+                    </div>
+                    <button onclick="showAddTaskModal('not-urgent-not-important')" class="btn-blue px-4 py-2 rounded-none font-bold text-xs uppercase">
+                        + ADD
+                    </button>
+                </div>
+
+                <div id="quadrant-not-urgent-not-important" class="drop-zone space-y-3" data-quadrant="not-urgent-not-important">
+                    <!-- Tasks will be inserted here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Statistics -->
+        <div class="mt-12 grid grid-cols-2 lg:grid-cols-4 gap-4">
+            <div class="bg-white border-2 border-[#383838] rounded p-4 text-center">
+                <div class="text-3xl font-bold text-[#FF6B6B]" id="stat-urgent-important">0</div>
+                <div class="text-sm text-gray-600 mt-1">Do First</div>
+            </div>
+            <div class="bg-white border-2 border-[#383838] rounded p-4 text-center">
+                <div class="text-3xl font-bold text-[#6FC2FF]" id="stat-not-urgent-important">0</div>
+                <div class="text-sm text-gray-600 mt-1">Schedule</div>
+            </div>
+            <div class="bg-white border-2 border-[#383838] rounded p-4 text-center">
+                <div class="text-3xl font-bold text-[#FFD500]" id="stat-urgent-not-important">0</div>
+                <div class="text-sm text-gray-600 mt-1">Delegate</div>
+            </div>
+            <div class="bg-white border-2 border-[#383838] rounded p-4 text-center">
+                <div class="text-3xl font-bold text-[#4DD4D0]" id="stat-not-urgent-not-important">0</div>
+                <div class="text-sm text-gray-600 mt-1">Eliminate</div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Add Task Modal -->
+    <div id="modal" class="fixed inset-0 bg-[#383838]/50 hidden items-center justify-center z-50 px-4">
+        <div class="bg-white border-2 border-[#383838] max-w-md w-full p-6">
+            <h2 class="text-2xl font-bold tracking-tight mb-4">ADD NEW TASK</h2>
+
+            <form onsubmit="addTask(event)" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-semibold mb-2">TASK DESCRIPTION</label>
+                    <textarea
+                        id="task-input"
+                        rows="3"
+                        placeholder="Enter task description..."
+                        class="w-full px-4 py-3 border-2 border-[#383838] text-base focus:outline-none focus:ring-2 focus:ring-[#6FC2FF]"
+                        required
+                    ></textarea>
+                </div>
+
+                <div class="flex gap-3">
+                    <button type="submit" class="btn-blue flex-1 px-6 py-3 rounded-none font-bold text-base uppercase">
+                        ADD TASK
+                    </button>
+                    <button type="button" onclick="closeModal()" class="btn-white px-6 py-3 rounded-none font-bold text-base uppercase">
+                        CANCEL
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Statistics Modal -->
+    <div id="statistics-modal" class="fixed inset-0 bg-[#383838]/50 hidden items-center justify-center z-50 px-4 overflow-y-auto">
+        <div class="bg-white border-2 border-[#383838] max-w-6xl w-full p-8 my-8">
+            <div class="flex items-center justify-between mb-6">
+                <h2 class="text-3xl font-bold tracking-tight">TASK STATISTICS</h2>
+                <button onclick="toggleStatistics()" class="text-[#383838] hover:opacity-70 text-3xl font-bold">&times;</button>
+            </div>
+
+            <!-- View Toggle -->
+            <div class="flex gap-3 mb-8">
+                <button onclick="switchStatView('chart')" id="btn-chart-view" class="btn-blue px-6 py-3 rounded-none font-bold text-sm uppercase">
+                    📊 CHART VIEW
+                </button>
+                <button onclick="switchStatView('list')" id="btn-list-view" class="btn-white px-6 py-3 rounded-none font-bold text-sm uppercase">
+                    📋 LIST VIEW
+                </button>
+            </div>
+
+            <!-- Chart View -->
+            <div id="chart-view" class="space-y-8">
+                <!-- Overview Stats -->
+                <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div class="bg-[#F4EFEA] border-2 border-[#383838] rounded p-4 text-center">
+                        <div class="text-4xl font-bold text-[#383838]" id="total-tasks">0</div>
+                        <div class="text-sm text-gray-600 mt-1">Total Tasks</div>
+                    </div>
+                    <div class="bg-[#F4EFEA] border-2 border-[#383838] rounded p-4 text-center">
+                        <div class="text-4xl font-bold text-[#4DD4D0]" id="completed-tasks">0</div>
+                        <div class="text-sm text-gray-600 mt-1">Completed</div>
+                    </div>
+                    <div class="bg-[#F4EFEA] border-2 border-[#383838] rounded p-4 text-center">
+                        <div class="text-4xl font-bold text-[#FFD500]" id="pending-tasks">0</div>
+                        <div class="text-sm text-gray-600 mt-1">Pending</div>
+                    </div>
+                    <div class="bg-[#F4EFEA] border-2 border-[#383838] rounded p-4 text-center">
+                        <div class="text-4xl font-bold text-[#6FC2FF]" id="completion-rate">0%</div>
+                        <div class="text-sm text-gray-600 mt-1">Completion Rate</div>
+                    </div>
+                </div>
+
+                <!-- Charts -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <!-- Pie Chart -->
+                    <div class="bg-white border-2 border-[#383838] rounded p-6">
+                        <h3 class="text-xl font-bold tracking-tight mb-4">TASKS BY QUADRANT</h3>
+                        <div class="relative" style="height: 300px;">
+                            <canvas id="pieChart"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Bar Chart -->
+                    <div class="bg-white border-2 border-[#383838] rounded p-6">
+                        <h3 class="text-xl font-bold tracking-tight mb-4">COMPLETION STATUS</h3>
+                        <div class="relative" style="height: 300px;">
+                            <canvas id="barChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- List View -->
+            <div id="list-view" class="hidden space-y-6">
+                <!-- Summary Cards -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div class="bg-white border-2 border-[#383838] rounded p-6">
+                        <div class="flex items-center gap-3 mb-4">
+                            <div class="w-4 h-4 bg-[#FF6B6B] border-2 border-[#383838]"></div>
+                            <h3 class="text-lg font-bold">DO FIRST</h3>
+                        </div>
+                        <div class="space-y-2">
+                            <div class="flex justify-between text-sm">
+                                <span class="text-gray-600">Total:</span>
+                                <span class="font-semibold" id="list-urgent-important-total">0</span>
+                            </div>
+                            <div class="flex justify-between text-sm">
+                                <span class="text-gray-600">Completed:</span>
+                                <span class="font-semibold text-[#4DD4D0]" id="list-urgent-important-completed">0</span>
+                            </div>
+                            <div class="flex justify-between text-sm">
+                                <span class="text-gray-600">Pending:</span>
+                                <span class="font-semibold text-[#FFD500]" id="list-urgent-important-pending">0</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white border-2 border-[#383838] rounded p-6">
+                        <div class="flex items-center gap-3 mb-4">
+                            <div class="w-4 h-4 bg-[#6FC2FF] border-2 border-[#383838]"></div>
+                            <h3 class="text-lg font-bold">SCHEDULE</h3>
+                        </div>
+                        <div class="space-y-2">
+                            <div class="flex justify-between text-sm">
+                                <span class="text-gray-600">Total:</span>
+                                <span class="font-semibold" id="list-not-urgent-important-total">0</span>
+                            </div>
+                            <div class="flex justify-between text-sm">
+                                <span class="text-gray-600">Completed:</span>
+                                <span class="font-semibold text-[#4DD4D0]" id="list-not-urgent-important-completed">0</span>
+                            </div>
+                            <div class="flex justify-between text-sm">
+                                <span class="text-gray-600">Pending:</span>
+                                <span class="font-semibold text-[#FFD500]" id="list-not-urgent-important-pending">0</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white border-2 border-[#383838] rounded p-6">
+                        <div class="flex items-center gap-3 mb-4">
+                            <div class="w-4 h-4 bg-[#FFD500] border-2 border-[#383838]"></div>
+                            <h3 class="text-lg font-bold">DELEGATE</h3>
+                        </div>
+                        <div class="space-y-2">
+                            <div class="flex justify-between text-sm">
+                                <span class="text-gray-600">Total:</span>
+                                <span class="font-semibold" id="list-urgent-not-important-total">0</span>
+                            </div>
+                            <div class="flex justify-between text-sm">
+                                <span class="text-gray-600">Completed:</span>
+                                <span class="font-semibold text-[#4DD4D0]" id="list-urgent-not-important-completed">0</span>
+                            </div>
+                            <div class="flex justify-between text-sm">
+                                <span class="text-gray-600">Pending:</span>
+                                <span class="font-semibold text-[#FFD500]" id="list-urgent-not-important-pending">0</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white border-2 border-[#383838] rounded p-6">
+                        <div class="flex items-center gap-3 mb-4">
+                            <div class="w-4 h-4 bg-[#4DD4D0] border-2 border-[#383838]"></div>
+                            <h3 class="text-lg font-bold">ELIMINATE</h3>
+                        </div>
+                        <div class="space-y-2">
+                            <div class="flex justify-between text-sm">
+                                <span class="text-gray-600">Total:</span>
+                                <span class="font-semibold" id="list-not-urgent-not-important-total">0</span>
+                            </div>
+                            <div class="flex justify-between text-sm">
+                                <span class="text-gray-600">Completed:</span>
+                                <span class="font-semibold text-[#4DD4D0]" id="list-not-urgent-not-important-completed">0</span>
+                            </div>
+                            <div class="flex justify-between text-sm">
+                                <span class="text-gray-600">Pending:</span>
+                                <span class="font-semibold text-[#FFD500]" id="list-not-urgent-not-important-pending">0</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Detailed Task List -->
+                <div class="bg-white border-2 border-[#383838] rounded p-6">
+                    <h3 class="text-xl font-bold tracking-tight mb-4">ALL TASKS DETAIL</h3>
+                    <div class="space-y-3" id="detailed-task-list">
+                        <!-- Will be populated by JavaScript -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="border-t-2 border-[#383838] bg-white mt-16">
+        <div class="max-w-7xl mx-auto px-6 py-8 text-center">
+            <p class="text-sm text-gray-600">
+                🦆 Built with <a href="https://motherduck.com" class="underline hover:opacity-70 transition-opacity">MotherDuck</a> Design System
+            </p>
+        </div>
+    </footer>
+
+    <script>
+        // Data structure
+        let tasks = {
+            'urgent-important': [],
+            'not-urgent-important': [],
+            'urgent-not-important': [],
+            'not-urgent-not-important': []
+        };
+
+        let currentQuadrant = null;
+        let draggedTaskId = null;
+
+        // Load tasks from localStorage on page load
+        function loadTasks() {
+            const saved = localStorage.getItem('quadrant-tasks');
+            if (saved) {
+                tasks = JSON.parse(saved);
+                renderAllQuadrants();
+            } else {
+                // Add some demo tasks
+                addDemoTasks();
+            }
+        }
+
+        // Add demo tasks for first-time users
+        function addDemoTasks() {
+            tasks['urgent-important'].push({
+                id: Date.now() + 1,
+                text: 'Fix critical production bug',
+                completed: false
+            });
+            tasks['not-urgent-important'].push({
+                id: Date.now() + 2,
+                text: 'Plan quarterly goals and OKRs',
+                completed: false
+            });
+            tasks['urgent-not-important'].push({
+                id: Date.now() + 3,
+                text: 'Respond to non-critical emails',
+                completed: false
+            });
+            tasks['not-urgent-not-important'].push({
+                id: Date.now() + 4,
+                text: 'Browse social media mindlessly',
+                completed: false
+            });
+            saveTasks();
+            renderAllQuadrants();
+        }
+
+        // Save tasks to localStorage
+        function saveTasks() {
+            localStorage.setItem('quadrant-tasks', JSON.stringify(tasks));
+        }
+
+        // Show add task modal
+        function showAddTaskModal(quadrant) {
+            currentQuadrant = quadrant;
+            document.getElementById('modal').classList.remove('hidden');
+            document.getElementById('modal').classList.add('flex');
+            document.getElementById('task-input').focus();
+        }
+
+        // Close modal
+        function closeModal() {
+            document.getElementById('modal').classList.add('hidden');
+            document.getElementById('modal').classList.remove('flex');
+            document.getElementById('task-input').value = '';
+        }
+
+        // Add new task
+        function addTask(event) {
+            event.preventDefault();
+            const input = document.getElementById('task-input');
+            const text = input.value.trim();
+
+            if (text && currentQuadrant) {
+                const task = {
+                    id: Date.now(),
+                    text: text,
+                    completed: false
+                };
+
+                tasks[currentQuadrant].push(task);
+                saveTasks();
+                renderQuadrant(currentQuadrant);
+                updateStatistics();
+                closeModal();
+            }
+        }
+
+        // Delete task
+        function deleteTask(quadrant, taskId) {
+            if (confirm('Are you sure you want to delete this task?')) {
+                tasks[quadrant] = tasks[quadrant].filter(task => task.id !== taskId);
+                saveTasks();
+                renderQuadrant(quadrant);
+                updateStatistics();
+            }
+        }
+
+        // Toggle task completion
+        function toggleTask(quadrant, taskId) {
+            const task = tasks[quadrant].find(t => t.id === taskId);
+            if (task) {
+                task.completed = !task.completed;
+                saveTasks();
+                renderQuadrant(quadrant);
+            }
+        }
+
+        // Clear all tasks
+        function clearAllTasks() {
+            if (confirm('Are you sure you want to clear ALL tasks? This cannot be undone.')) {
+                tasks = {
+                    'urgent-important': [],
+                    'not-urgent-important': [],
+                    'urgent-not-important': [],
+                    'not-urgent-not-important': []
+                };
+                saveTasks();
+                renderAllQuadrants();
+            }
+        }
+
+        // Render a single quadrant
+        function renderQuadrant(quadrant) {
+            const container = document.getElementById(`quadrant-${quadrant}`);
+            const quadrantTasks = tasks[quadrant];
+
+            if (quadrantTasks.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state text-center py-12">
+                        <p class="text-gray-600 text-sm">No tasks yet. Click "+ ADD" to create one.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = quadrantTasks.map(task => `
+                <div
+                    class="task-item quadrant-${quadrant} flex items-start gap-3 bg-white border-2 border-[#383838] p-4 cursor-move ${task.completed ? 'completed' : ''}"
+                    draggable="true"
+                    data-task-id="${task.id}"
+                    data-quadrant="${quadrant}"
+                    ondragstart="handleDragStart(event)"
+                    ondragend="handleDragEnd(event)"
+                >
+                    <input
+                        type="checkbox"
+                        class="custom-checkbox"
+                        ${task.completed ? 'checked' : ''}
+                        onchange="toggleTask('${quadrant}', ${task.id})"
+                    >
+                    <p class="task-text flex-1 text-sm font-medium leading-relaxed">${escapeHtml(task.text)}</p>
+                    <button
+                        onclick="deleteTask('${quadrant}', ${task.id})"
+                        class="text-[#FF6B6B] hover:text-[#FF4545] font-bold text-lg transition-colors"
+                        title="Delete task"
+                    >×</button>
+                </div>
+            `).join('');
+        }
+
+        // Render all quadrants
+        function renderAllQuadrants() {
+            renderQuadrant('urgent-important');
+            renderQuadrant('not-urgent-important');
+            renderQuadrant('urgent-not-important');
+            renderQuadrant('not-urgent-not-important');
+            updateStatistics();
+        }
+
+        // Update statistics
+        function updateStatistics() {
+            document.getElementById('stat-urgent-important').textContent = tasks['urgent-important'].length;
+            document.getElementById('stat-not-urgent-important').textContent = tasks['not-urgent-important'].length;
+            document.getElementById('stat-urgent-not-important').textContent = tasks['urgent-not-important'].length;
+            document.getElementById('stat-not-urgent-not-important').textContent = tasks['not-urgent-not-important'].length;
+        }
+
+        // Drag and drop handlers
+        function handleDragStart(event) {
+            const taskElement = event.target;
+            draggedTaskId = parseInt(taskElement.dataset.taskId);
+            const sourceQuadrant = taskElement.dataset.quadrant;
+
+            taskElement.classList.add('dragging');
+            event.dataTransfer.effectAllowed = 'move';
+            event.dataTransfer.setData('text/html', taskElement.innerHTML);
+            event.dataTransfer.setData('source-quadrant', sourceQuadrant);
+        }
+
+        function handleDragEnd(event) {
+            event.target.classList.remove('dragging');
+        }
+
+        function handleDragOver(event) {
+            if (event.preventDefault) {
+                event.preventDefault();
+            }
+            event.dataTransfer.dropEffect = 'move';
+            return false;
+        }
+
+        function handleDragEnter(event) {
+            if (event.target.classList.contains('drop-zone')) {
+                event.target.classList.add('drag-over');
+            }
+        }
+
+        function handleDragLeave(event) {
+            if (event.target.classList.contains('drop-zone')) {
+                event.target.classList.remove('drag-over');
+            }
+        }
+
+        function handleDrop(event) {
+            if (event.stopPropagation) {
+                event.stopPropagation();
+            }
+
+            const dropZone = event.target.closest('.drop-zone');
+            if (dropZone) {
+                dropZone.classList.remove('drag-over');
+
+                const sourceQuadrant = event.dataTransfer.getData('source-quadrant');
+                const targetQuadrant = dropZone.dataset.quadrant;
+
+                if (sourceQuadrant && targetQuadrant && draggedTaskId) {
+                    // Find and remove task from source
+                    const taskIndex = tasks[sourceQuadrant].findIndex(t => t.id === draggedTaskId);
+                    if (taskIndex !== -1) {
+                        const task = tasks[sourceQuadrant].splice(taskIndex, 1)[0];
+
+                        // Add to target
+                        tasks[targetQuadrant].push(task);
+
+                        saveTasks();
+                        renderAllQuadrants();
+                    }
+                }
+            }
+
+            return false;
+        }
+
+        // Escape HTML to prevent XSS
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Set up drag and drop for all drop zones
+        function initDragAndDrop() {
+            const dropZones = document.querySelectorAll('.drop-zone');
+            dropZones.forEach(zone => {
+                zone.addEventListener('dragover', handleDragOver);
+                zone.addEventListener('dragenter', handleDragEnter);
+                zone.addEventListener('dragleave', handleDragLeave);
+                zone.addEventListener('drop', handleDrop);
+            });
+        }
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', (event) => {
+            // Escape key to close modals
+            if (event.key === 'Escape') {
+                if (!document.getElementById('modal').classList.contains('hidden')) {
+                    closeModal();
+                }
+                if (!document.getElementById('statistics-modal').classList.contains('hidden')) {
+                    toggleStatistics();
+                }
+            }
+        });
+
+        // Statistics functionality
+        let pieChartInstance = null;
+        let barChartInstance = null;
+        let currentStatView = 'chart';
+
+        function toggleStatistics() {
+            const modal = document.getElementById('statistics-modal');
+            if (modal.classList.contains('hidden')) {
+                modal.classList.remove('hidden');
+                modal.classList.add('flex');
+                updateStatisticsData();
+                if (currentStatView === 'chart') {
+                    renderCharts();
+                }
+            } else {
+                modal.classList.add('hidden');
+                modal.classList.remove('flex');
+            }
+        }
+
+        function switchStatView(view) {
+            currentStatView = view;
+            const chartView = document.getElementById('chart-view');
+            const listView = document.getElementById('list-view');
+            const btnChart = document.getElementById('btn-chart-view');
+            const btnList = document.getElementById('btn-list-view');
+
+            if (view === 'chart') {
+                chartView.classList.remove('hidden');
+                listView.classList.add('hidden');
+                btnChart.className = 'btn-blue px-6 py-3 rounded-none font-bold text-sm uppercase';
+                btnList.className = 'btn-white px-6 py-3 rounded-none font-bold text-sm uppercase';
+                renderCharts();
+            } else {
+                chartView.classList.add('hidden');
+                listView.classList.remove('hidden');
+                btnChart.className = 'btn-white px-6 py-3 rounded-none font-bold text-sm uppercase';
+                btnList.className = 'btn-blue px-6 py-3 rounded-none font-bold text-sm uppercase';
+                renderListView();
+            }
+        }
+
+        function updateStatisticsData() {
+            // Calculate totals
+            let totalTasks = 0;
+            let completedTasks = 0;
+
+            Object.keys(tasks).forEach(quadrant => {
+                totalTasks += tasks[quadrant].length;
+                completedTasks += tasks[quadrant].filter(t => t.completed).length;
+            });
+
+            const pendingTasks = totalTasks - completedTasks;
+            const completionRate = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
+
+            // Update overview stats
+            document.getElementById('total-tasks').textContent = totalTasks;
+            document.getElementById('completed-tasks').textContent = completedTasks;
+            document.getElementById('pending-tasks').textContent = pendingTasks;
+            document.getElementById('completion-rate').textContent = completionRate + '%';
+        }
+
+        function renderCharts() {
+            // Prepare data
+            const quadrantNames = ['DO FIRST', 'SCHEDULE', 'DELEGATE', 'ELIMINATE'];
+            const quadrantKeys = ['urgent-important', 'not-urgent-important', 'urgent-not-important', 'not-urgent-not-important'];
+            const quadrantColors = ['#FF6B6B', '#6FC2FF', '#FFD500', '#4DD4D0'];
+
+            const taskCounts = quadrantKeys.map(key => tasks[key].length);
+            const completedCounts = quadrantKeys.map(key => tasks[key].filter(t => t.completed).length);
+            const pendingCounts = quadrantKeys.map(key => tasks[key].filter(t => !t.completed).length);
+
+            // Destroy existing charts
+            if (pieChartInstance) {
+                pieChartInstance.destroy();
+            }
+            if (barChartInstance) {
+                barChartInstance.destroy();
+            }
+
+            // Pie Chart - Tasks by Quadrant
+            const pieCtx = document.getElementById('pieChart').getContext('2d');
+            pieChartInstance = new Chart(pieCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: quadrantNames,
+                    datasets: [{
+                        data: taskCounts,
+                        backgroundColor: quadrantColors,
+                        borderColor: '#383838',
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                font: {
+                                    family: 'Inter',
+                                    size: 12,
+                                    weight: '600'
+                                },
+                                padding: 15,
+                                boxWidth: 15,
+                                boxHeight: 15
+                            }
+                        },
+                        tooltip: {
+                            backgroundColor: '#383838',
+                            titleFont: {
+                                family: 'Inter',
+                                size: 14,
+                                weight: 'bold'
+                            },
+                            bodyFont: {
+                                family: 'Inter',
+                                size: 13
+                            },
+                            padding: 12,
+                            cornerRadius: 4
+                        }
+                    }
+                }
+            });
+
+            // Bar Chart - Completion Status
+            const barCtx = document.getElementById('barChart').getContext('2d');
+            barChartInstance = new Chart(barCtx, {
+                type: 'bar',
+                data: {
+                    labels: quadrantNames,
+                    datasets: [
+                        {
+                            label: 'Completed',
+                            data: completedCounts,
+                            backgroundColor: '#4DD4D0',
+                            borderColor: '#383838',
+                            borderWidth: 2
+                        },
+                        {
+                            label: 'Pending',
+                            data: pendingCounts,
+                            backgroundColor: '#FFD500',
+                            borderColor: '#383838',
+                            borderWidth: 2
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                font: {
+                                    family: 'Inter',
+                                    size: 12,
+                                    weight: '600'
+                                },
+                                padding: 15,
+                                boxWidth: 15,
+                                boxHeight: 15
+                            }
+                        },
+                        tooltip: {
+                            backgroundColor: '#383838',
+                            titleFont: {
+                                family: 'Inter',
+                                size: 14,
+                                weight: 'bold'
+                            },
+                            bodyFont: {
+                                family: 'Inter',
+                                size: 13
+                            },
+                            padding: 12,
+                            cornerRadius: 4
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                stepSize: 1,
+                                font: {
+                                    family: 'Inter',
+                                    size: 12
+                                }
+                            },
+                            grid: {
+                                color: '#E0E0E0'
+                            }
+                        },
+                        x: {
+                            ticks: {
+                                font: {
+                                    family: 'Inter',
+                                    size: 12,
+                                    weight: '600'
+                                }
+                            },
+                            grid: {
+                                display: false
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function renderListView() {
+            const quadrantKeys = ['urgent-important', 'not-urgent-important', 'urgent-not-important', 'not-urgent-not-important'];
+
+            // Update summary cards
+            quadrantKeys.forEach(key => {
+                const total = tasks[key].length;
+                const completed = tasks[key].filter(t => t.completed).length;
+                const pending = total - completed;
+
+                document.getElementById(`list-${key}-total`).textContent = total;
+                document.getElementById(`list-${key}-completed`).textContent = completed;
+                document.getElementById(`list-${key}-pending`).textContent = pending;
+            });
+
+            // Render detailed task list
+            const detailedList = document.getElementById('detailed-task-list');
+            const quadrantLabels = {
+                'urgent-important': 'DO FIRST',
+                'not-urgent-important': 'SCHEDULE',
+                'urgent-not-important': 'DELEGATE',
+                'not-urgent-not-important': 'ELIMINATE'
+            };
+            const quadrantColors = {
+                'urgent-important': '#FF6B6B',
+                'not-urgent-important': '#6FC2FF',
+                'urgent-not-important': '#FFD500',
+                'not-urgent-not-important': '#4DD4D0'
+            };
+
+            let html = '';
+            quadrantKeys.forEach(key => {
+                if (tasks[key].length > 0) {
+                    html += `
+                        <div class="mb-6">
+                            <div class="flex items-center gap-2 mb-3">
+                                <div class="w-3 h-3 border-2 border-[#383838]" style="background-color: ${quadrantColors[key]}"></div>
+                                <h4 class="font-bold text-sm">${quadrantLabels[key]}</h4>
+                            </div>
+                            <div class="space-y-2">
+                                ${tasks[key].map(task => `
+                                    <div class="flex items-start gap-2 text-sm border-l-2 pl-3" style="border-color: ${quadrantColors[key]}">
+                                        <span class="${task.completed ? 'line-through opacity-60' : ''}">${escapeHtml(task.text)}</span>
+                                        <span class="ml-auto flex-shrink-0 ${task.completed ? 'text-[#4DD4D0]' : 'text-[#FFD500]'} font-semibold text-xs">
+                                            ${task.completed ? '✓ DONE' : '⏳ PENDING'}
+                                        </span>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                    `;
+                }
+            });
+
+            if (html === '') {
+                html = '<p class="text-gray-500 text-center py-8">No tasks to display</p>';
+            }
+
+            detailedList.innerHTML = html;
+        }
+
+        // Initialize on page load
+        window.addEventListener('DOMContentLoaded', () => {
+            loadTasks();
+            initDragAndDrop();
+        });
+    </script>
+</body>
+</html>

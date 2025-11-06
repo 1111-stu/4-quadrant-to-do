@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MotherDuck - Making Big Data Feel Small</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        }
+
+        .code-text {
+            font-family: 'Monaco', 'Courier New', monospace;
+        }
+
+        .cloud {
+            background: white;
+            border-radius: 100px;
+            opacity: 0.4;
+            position: absolute;
+        }
+
+        .cloud::before,
+        .cloud::after {
+            content: '';
+            position: absolute;
+            background: white;
+            border-radius: 50%;
+        }
+
+        .cloud-small::before {
+            width: 50px;
+            height: 50px;
+            top: -20px;
+            left: 10px;
+        }
+
+        .cloud-small::after {
+            width: 60px;
+            height: 60px;
+            top: -25px;
+            right: 10px;
+        }
+
+        @keyframes scroll {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
+        }
+
+        .animate-scroll {
+            animation: scroll 30s linear infinite;
+        }
+
+        .custom-checkbox {
+            appearance: none;
+            width: 18px;
+            height: 18px;
+            border: 2px solid #383838;
+            border-radius: 3px;
+            background: white;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .custom-checkbox:checked {
+            background: #383838;
+        }
+
+        .custom-checkbox:checked::after {
+            content: '✓';
+            position: absolute;
+            color: white;
+            font-size: 12px;
+            top: -2px;
+            left: 2px;
+        }
+
+        /* Button styles with shadow effect */
+        .btn-blue {
+            background-color: #6FC2FF;
+            border: 2px solid #383838;
+            color: #383838;
+            position: relative;
+            transition: transform 120ms ease-in-out, box-shadow 120ms ease-in-out;
+        }
+
+        .btn-blue:hover {
+            transform: translate(-2px, -2px);
+            box-shadow: 4px 4px 0px 0px #383838;
+        }
+
+        .btn-blue:active {
+            transform: translate(0, 0);
+            box-shadow: 2px 2px 0px 0px #383838;
+        }
+
+        .btn-white {
+            background-color: white;
+            border: 2px solid #383838;
+            color: #383838;
+            position: relative;
+            transition: transform 120ms ease-in-out, box-shadow 120ms ease-in-out;
+        }
+
+        .btn-white:hover {
+            transform: translate(-2px, -2px);
+            box-shadow: 4px 4px 0px 0px #383838;
+        }
+
+        .btn-white:active {
+            transform: translate(0, 0);
+            box-shadow: 2px 2px 0px 0px #383838;
+        }
+
+        .btn-yellow {
+            background-color: #FFD500;
+            border: 2px solid #383838;
+            color: #383838;
+            position: relative;
+            transition: transform 120ms ease-in-out, box-shadow 120ms ease-in-out;
+        }
+
+        .btn-yellow:hover {
+            transform: translate(-2px, -2px);
+            box-shadow: 4px 4px 0px 0px #383838;
+        }
+
+        .btn-yellow:active {
+            transform: translate(0, 0);
+            box-shadow: 2px 2px 0px 0px #383838;
+        }
+    </style>
+</head>
+<body class="bg-[#F4EFEA] text-[#383838] antialiased">
+    <!-- Top Banner -->
+    <div class="bg-[#FFD500] text-[#383838] text-center py-3 px-4 text-sm font-semibold sticky top-0 z-50">
+        EMPOWERING DATA TEAMS: SMARTER AI WORKFLOWS &nbsp;&nbsp;
+        <a href="#" class="underline hover:opacity-70 transition-opacity">LIVE DEMO ON NOV 13 WITH HEX + MOTHERDUCK →</a>
+    </div>
+
+    <!-- Header -->
+    <header class="bg-[#F4EFEA] sticky top-12 z-40 border-b border-[#383838]/10">
+        <div class="max-w-7xl mx-auto px-6 lg:px-8 py-5 flex items-center justify-between">
+            <!-- Logo -->
+            <div class="flex items-center gap-2">
+                <svg width="32" height="32" viewBox="0 0 32 32" fill="none" class="flex-shrink-0">
+                    <path d="M16 6L26 13L16 20L6 13L16 6Z" fill="#FF9500"/>
+                    <path d="M16 20L26 27L16 34L6 27L16 20Z" fill="#FF6B00" opacity="0.7"/>
+                </svg>
+                <span class="text-xl font-bold tracking-tight">MotherDuck</span>
+            </div>
+
+            <!-- Navigation -->
+            <nav class="hidden lg:flex items-center gap-8">
+                <a href="#" class="text-sm font-medium hover:opacity-70 transition-opacity">PRODUCT ∨</a>
+                <a href="#" class="text-sm font-medium hover:opacity-70 transition-opacity">COMMUNITY ∨</a>
+                <a href="#" class="text-sm font-medium hover:opacity-70 transition-opacity">COMPANY ∨</a>
+                <a href="#" class="text-sm font-medium hover:opacity-70 transition-opacity">DOCS</a>
+                <a href="#" class="text-sm font-medium hover:opacity-70 transition-opacity">PRICING</a>
+                <a href="#" class="text-sm font-medium hover:opacity-70 transition-opacity">CONTACT US</a>
+            </nav>
+
+            <!-- Actions -->
+            <div class="flex items-center gap-4">
+                <a href="#" class="text-sm font-medium hover:opacity-70 transition-opacity">LOG IN</a>
+                <a href="#" class="btn-blue px-6 py-2.5 rounded-none font-bold text-sm uppercase">START FREE</a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="relative overflow-hidden py-20 lg:py-28 px-6">
+        <!-- Cloud decorations -->
+        <div class="cloud cloud-small" style="width: 100px; height: 60px; top: 50px; left: 5%;"></div>
+        <div class="cloud cloud-small" style="width: 120px; height: 70px; top: 30%; right: 8%;"></div>
+        <div class="cloud cloud-small" style="width: 90px; height: 55px; bottom: 15%; left: 10%;"></div>
+
+        <div class="max-w-6xl mx-auto relative z-10">
+            <div class="mb-8">
+                <svg width="50" height="50" viewBox="0 0 50 50" fill="none" class="mb-6">
+                    <path d="M15 10 Q10 10 10 15 Q10 20 15 20 Q20 20 20 15 Q20 10 15 10Z" fill="white" opacity="0.5"/>
+                </svg>
+            </div>
+
+            <h1 class="text-6xl lg:text-7xl xl:text-8xl font-bold tracking-tighter leading-none mb-8">
+                MAKING BIG DATA FEEL SMALL
+            </h1>
+
+            <p class="text-lg lg:text-xl max-w-4xl mb-10 font-medium leading-relaxed">
+                DUCKDB CLOUD DATA WAREHOUSE SCALING TO TERABYTES FOR CUSTOMER-FACING ANALYTICS AND BI
+            </p>
+
+            <div class="flex flex-wrap gap-4 mb-16">
+                <a href="#" class="btn-blue px-8 py-4 rounded-none font-bold text-base uppercase">
+                    TRY 21 DAYS FREE
+                </a>
+                <a href="#" class="btn-white px-8 py-4 rounded-none font-bold text-base uppercase">
+                    LEARN MORE
+                </a>
+                <a href="#" class="btn-white px-8 py-4 rounded-none font-bold text-base uppercase">
+                    BOOK A DEMO
+                </a>
+            </div>
+
+            <!-- Code Demo Window -->
+            <div class="bg-white rounded-lg shadow-2xl overflow-hidden max-w-4xl mx-auto">
+                <!-- Window Header -->
+                <div class="bg-[#2D2D2D] text-white px-5 py-3 flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                        <div class="flex items-center gap-2">
+                            <div class="w-3 h-3 rounded-full bg-red-500"></div>
+                            <div class="w-3 h-3 rounded-full bg-yellow-500"></div>
+                            <div class="w-3 h-3 rounded-full bg-green-500"></div>
+                        </div>
+                        <span class="text-sm font-medium">DuckDB</span>
+                    </div>
+                    <div class="flex items-center gap-4 text-sm">
+                        <a href="#" class="hover:opacity-70 transition-opacity">🦆 Sign in to MotherDuck</a>
+                        <a href="#" class="hover:opacity-70 transition-opacity">⊙ Help</a>
+                    </div>
+                </div>
+
+                <!-- Code Editor -->
+                <div class="p-6 code-text text-sm leading-relaxed">
+                    <div class="text-gray-500 text-xs mb-3">✓ Instant SQL</div>
+                    <div class="space-y-1">
+                        <div><span class="text-blue-600">with</span> transformed_data <span class="text-blue-600">as</span> (</div>
+                        <div class="pl-4"><span class="text-blue-600">from</span> nyc.service_requests</div>
+                        <div class="pl-4"><span class="text-blue-600">select</span></div>
+                        <div class="pl-8">agency_name,</div>
+                        <div class="pl-8">date_part(<span class="text-red-600">'days'</span>, closed_date - created_date) <span class="text-blue-600">as</span> time_to_close</div>
+                        <div class="pl-4"><span class="text-blue-600">where</span> time_to_close &lt; <span class="text-red-600">365</span></div>
+                        <div>)</div>
+                        <div><span class="text-blue-600">from</span> transformed_data</div>
+                        <div><span class="text-blue-600">select</span></div>
+                        <div class="pl-4">agency_name,</div>
+                        <div class="pl-4">round(avg(time_to_close), 2)</div>
+                        <div><span class="text-blue-600">group by all</span></div>
+                        <div><span class="text-blue-600">order by</span> 2 <span class="text-blue-600">desc</span></div>
+                    </div>
+                </div>
+
+                <!-- Results -->
+                <div class="border-t border-gray-200 p-6">
+                    <div class="text-gray-500 text-xs mb-3">⊙ Showing preview results</div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-sm">
+                            <thead>
+                                <tr class="border-b border-gray-200">
+                                    <th class="text-left py-2 px-3 font-semibold bg-gray-50">agency_name</th>
+                                    <th class="text-left py-2 px-3 font-semibold bg-gray-50">time_to_close</th>
+                                    <th class="text-left py-2 px-3 font-semibold bg-gray-50">days</th>
+                                    <th class="text-left py-2 px-3 font-semibold bg-gray-50">(closed_date - created_date)</th>
+                                </tr>
+                            </thead>
+                            <tbody class="text-sm">
+                                <tr class="border-b border-gray-100">
+                                    <td class="py-2.5 px-3">Department of Parks and Recreation</td>
+                                    <td class="py-2.5 px-3">3</td>
+                                    <td class="py-2.5 px-3">days</td>
+                                    <td class="py-2.5 px-3">3 days 01:13:52</td>
+                                </tr>
+                                <tr class="border-b border-gray-100">
+                                    <td class="py-2.5 px-3">Land Records</td>
+                                    <td class="py-2.5 px-3">1</td>
+                                    <td class="py-2.5 px-3">days</td>
+                                    <td class="py-2.5 px-3">1 day 23:57:27</td>
+                                </tr>
+                                <tr>
+                                    <td class="py-2.5 px-3">Department of Parks and Recreation</td>
+                                    <td class="py-2.5 px-3">6</td>
+                                    <td class="py-2.5 px-3">days</td>
+                                    <td class="py-2.5 px-3">6 days 18:16:25</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="mt-4 flex justify-end">
+                        <button class="bg-[#383838] text-white px-6 py-2 border-2 border-[#383838] font-bold text-sm uppercase hover:bg-[#2a2a2a] transition-colors">
+                            INSPECT CTES
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Decorative elements -->
+            <div class="absolute bottom-0 right-0">
+                <svg width="80" height="80" viewBox="0 0 80 80" fill="none">
+                    <rect x="10" y="10" width="50" height="50" fill="#4DD4D0" opacity="0.3" rx="8"/>
+                </svg>
+            </div>
+        </div>
+    </section>
+
+    <!-- Book Section -->
+    <section class="bg-white py-20 px-6">
+        <div class="max-w-6xl mx-auto flex flex-col lg:flex-row items-center gap-16">
+            <!-- Book Image -->
+            <div class="relative flex-shrink-0">
+                <div class="w-56 h-80 bg-gradient-to-br from-gray-800 to-gray-900 rounded-lg shadow-2xl relative overflow-hidden">
+                    <div class="absolute top-8 left-8 text-white">
+                        <div class="text-3xl font-bold leading-tight mb-2">DuckDB</div>
+                        <div class="text-3xl font-bold leading-tight">IN ACTION</div>
+                        <div class="mt-8 opacity-60">
+                            <svg width="120" height="120" viewBox="0 0 120 120" fill="white" opacity="0.2">
+                                <circle cx="60" cy="60" r="40"/>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+                <div class="absolute -top-6 -right-12 bg-[#4DD4D0] text-[#383838] px-6 py-3 rounded-full font-bold text-sm transform rotate-12 shadow-lg">
+                    FREE<br/>BOOK
+                </div>
+            </div>
+
+            <!-- Book Content -->
+            <div class="flex-1">
+                <h2 class="text-4xl lg:text-5xl font-bold tracking-tight mb-6">
+                    "DUCKDB IN ACTION" BOOK<br/>FOR FREE
+                </h2>
+                <p class="text-lg mb-8">Get the complete book for free in your inbox!</p>
+
+                <div class="flex flex-wrap gap-3 mb-6">
+                    <input type="email" placeholder="Work Email" class="flex-1 min-w-[250px] px-5 py-3 border-2 border-[#383838] text-base focus:outline-none focus:ring-2 focus:ring-[#6FC2FF]">
+                    <button class="btn-white px-8 py-3 rounded-none font-bold text-base uppercase">
+                        SUBMIT
+                    </button>
+                </div>
+
+                <div class="space-y-3">
+                    <label class="flex items-center gap-3 cursor-pointer">
+                        <input type="checkbox" checked class="custom-checkbox">
+                        <span class="text-sm">Subscribe to MotherDuck news</span>
+                    </label>
+                    <label class="flex items-center gap-3 cursor-pointer">
+                        <input type="checkbox" checked class="custom-checkbox">
+                        <span class="text-sm">Subscribe to DuckDB ecosystem newsletter</span>
+                    </label>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Finally Section -->
+    <section class="py-16 px-6 text-center">
+        <div class="inline-flex border-2 border-[#383838] overflow-hidden">
+            <div class="bg-[#383838] text-white px-10 py-5 text-3xl font-bold">
+                FINALLY:
+            </div>
+            <div class="bg-white text-[#383838] px-10 py-5 text-xl font-medium flex items-center">
+                A database you don't hate
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="py-20 px-6">
+        <div class="max-w-7xl mx-auto">
+            <h2 class="text-5xl font-bold tracking-tight mb-16">WHY IT'S BETTER</h2>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <!-- Feature 1 -->
+                <div class="bg-white border-2 border-[#383838] rounded p-8 min-h-[340px] hover:shadow-lg transition-shadow">
+                    <div class="mb-8">
+                        <svg width="80" height="80" viewBox="0 0 80 80" fill="none">
+                            <circle cx="20" cy="40" r="14" fill="#FFD500"/>
+                            <circle cx="40" cy="40" r="10" fill="#FFD500" opacity="0.6"/>
+                            <circle cx="56" cy="40" r="7" fill="#FFD500" opacity="0.3"/>
+                            <line x1="34" y1="40" x2="63" y2="40" stroke="#383838" stroke-width="2"/>
+                        </svg>
+                    </div>
+                    <h3 class="text-base font-semibold leading-snug">
+                        Scales Vertically and Horizontally to handle Spikey Workloads
+                    </h3>
+                </div>
+
+                <!-- Feature 2 -->
+                <div class="bg-white border-2 border-[#383838] rounded p-8 min-h-[340px] hover:shadow-lg transition-shadow">
+                    <div class="mb-8">
+                        <svg width="80" height="80" viewBox="0 0 80 80" fill="none">
+                            <rect x="15" y="15" width="35" height="35" fill="#4DD4D0" rx="6"/>
+                            <rect x="30" y="30" width="15" height="15" fill="white" opacity="0.5"/>
+                        </svg>
+                    </div>
+                    <h3 class="text-base font-semibold leading-snug">
+                        Reads YOUR data. (plaintext, json, parquet, iceberg, xls, csv)
+                    </h3>
+                </div>
+
+                <!-- Feature 3 -->
+                <div class="bg-white border-2 border-[#383838] rounded p-8 min-h-[340px] hover:shadow-lg transition-shadow">
+                    <div class="mb-8">
+                        <svg width="80" height="80" viewBox="0 0 80 80" fill="none">
+                            <rect x="12" y="20" width="10" height="40" fill="#5CB8E6"/>
+                            <rect x="26" y="30" width="10" height="30" fill="#5CB8E6"/>
+                            <rect x="40" y="15" width="10" height="45" fill="#5CB8E6"/>
+                            <rect x="54" y="25" width="10" height="35" fill="#5CB8E6"/>
+                            <path d="M15 17 L31 27 L45 12 L59 22" stroke="#383838" stroke-width="2" fill="none"/>
+                        </svg>
+                    </div>
+                    <h3 class="text-base font-semibold leading-snug">
+                        Fast, columnar central data storage optimized for analytics
+                    </h3>
+                </div>
+
+                <!-- Feature 4 -->
+                <div class="bg-white border-2 border-[#383838] rounded p-8 min-h-[340px] hover:shadow-lg transition-shadow">
+                    <div class="mb-8">
+                        <svg width="80" height="80" viewBox="0 0 80 80" fill="none">
+                            <circle cx="28" cy="28" r="16" fill="#FF6B6B"/>
+                            <rect x="38" y="38" width="30" height="22" fill="#666666" rx="2"/>
+                            <rect x="42" y="42" width="8" height="6" fill="white"/>
+                            <rect x="52" y="42" width="8" height="6" fill="white"/>
+                        </svg>
+                    </div>
+                    <h3 class="text-base font-semibold leading-snug">
+                        Run locally, deploy to the cloud for reliability and collaboration. Fits into your workflow
+                    </h3>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Who Section -->
+    <section class="py-20 px-6 bg-white">
+        <div class="max-w-7xl mx-auto">
+            <h2 class="text-5xl font-bold tracking-tight mb-3">WHO IS IT FOR?</h2>
+            <p class="text-xl text-gray-600 mb-16">Analytics that works for everyone</p>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-12 mb-16">
+                <!-- Software Engineers -->
+                <div class="text-center">
+                    <div class="mb-8">
+                        <svg width="200" height="200" viewBox="0 0 200 200" fill="none" class="mx-auto">
+                            <rect x="50" y="80" width="100" height="60" fill="#2D2D2D" rx="4"/>
+                            <rect x="60" y="90" width="35" height="25" fill="#4DD4D0"/>
+                            <rect x="105" y="90" width="35" height="25" fill="#4DD4D0"/>
+                            <circle cx="100" cy="50" r="25" fill="#FFD500"/>
+                            <path d="M75 140 L75 170 M125 140 L125 170" stroke="#2D2D2D" stroke-width="8"/>
+                        </svg>
+                    </div>
+                    <div class="inline-block bg-[#FFD500] text-[#383838] px-8 py-3 rounded font-bold text-base mb-4">
+                        SOFTWARE ENGINEERS
+                    </div>
+                    <p class="text-base">Who ended up with a big data problem</p>
+                </div>
+
+                <!-- Data Scientists -->
+                <div class="text-center">
+                    <div class="mb-8">
+                        <svg width="200" height="200" viewBox="0 0 200 200" fill="none" class="mx-auto">
+                            <circle cx="90" cy="90" r="35" fill="#4DD4D0"/>
+                            <circle cx="120" cy="110" r="28" fill="#FFD500"/>
+                            <rect x="70" y="130" width="60" height="40" fill="#666666" rx="4"/>
+                        </svg>
+                    </div>
+                    <div class="inline-block bg-[#4DD4D0] text-[#383838] px-8 py-3 rounded font-bold text-base mb-4">
+                        DATA SCIENTISTS
+                    </div>
+                    <p class="text-base">Who ended up having to do data engineering</p>
+                </div>
+
+                <!-- Data Engineers -->
+                <div class="text-center">
+                    <div class="mb-8">
+                        <svg width="200" height="200" viewBox="0 0 200 200" fill="none" class="mx-auto">
+                            <path d="M70 80 L130 80 L140 100 L140 130 L60 130 L60 100 Z" fill="#5CB8E6"/>
+                            <circle cx="100" cy="100" r="15" fill="white"/>
+                            <rect x="85" y="130" width="12" height="30" fill="#666666"/>
+                            <rect x="103" y="130" width="12" height="30" fill="#666666"/>
+                        </svg>
+                    </div>
+                    <div class="inline-block bg-[#5CB8E6] text-[#383838] px-8 py-3 rounded font-bold text-base mb-4">
+                        DATA ENGINEERS
+                    </div>
+                    <p class="text-base">With slow, brittle pipelines</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Use Cases Scrolling Banner -->
+    <div class="bg-[#5CB8E6] py-8 overflow-hidden">
+        <div class="flex whitespace-nowrap animate-scroll">
+            <span class="text-5xl font-bold text-[#383838] mx-8">USE CASES</span>
+            <span class="text-5xl font-bold text-[#383838] mx-8">USE CASES</span>
+            <span class="text-5xl font-bold text-[#383838] mx-8">USE CASES</span>
+            <span class="text-5xl font-bold text-[#383838] mx-8">USE CASES</span>
+            <span class="text-5xl font-bold text-[#383838] mx-8">USE CASES</span>
+            <span class="text-5xl font-bold text-[#383838] mx-8">USE CASES</span>
+            <span class="text-5xl font-bold text-[#383838] mx-8">USE CASES</span>
+            <span class="text-5xl font-bold text-[#383838] mx-8">USE CASES</span>
+        </div>
+    </div>
+
+    <!-- Data Warehousing Section -->
+    <section class="py-20 px-6 bg-[#F4EFEA]">
+        <div class="max-w-6xl mx-auto flex flex-col lg:flex-row items-center gap-16">
+            <div class="flex-shrink-0">
+                <svg width="280" height="280" viewBox="0 0 280 280" fill="none">
+                    <circle cx="80" cy="140" r="50" fill="#FFD500"/>
+                    <rect x="120" y="80" width="120" height="120" fill="#4DD4D0" rx="12"/>
+                    <path d="M140 100 L220 100 L220 180 L140 180" stroke="white" stroke-width="4" fill="none"/>
+                </svg>
+            </div>
+
+            <div class="flex-1">
+                <h2 class="text-5xl font-bold tracking-tight mb-8">DATA WAREHOUSING</h2>
+                <p class="text-lg leading-relaxed">
+                    Is your data all over the place? Start making sense of your business by bringing it together for internal business intelligence and analytics. Build pure SQL pipelines, share data and quickly collaborate with your team.
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Testimonials Preview -->
+    <section class="py-16 px-6 bg-white">
+        <div class="max-w-6xl mx-auto">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="border-2 border-[#383838] rounded p-6 min-h-[180px]">
+                    <p class="text-sm italic mb-4">"I am a big @duckdb user. Is pretty good so far. Have few hundred million records."</p>
+                </div>
+                <div class="border-2 border-[#383838] rounded p-6 min-h-[180px]">
+                    <p class="text-sm italic mb-4">"It detects errors, and 'accept & run' fixes common errors. Love it."</p>
+                </div>
+                <div class="border-2 border-[#383838] rounded p-6 min-h-[180px]">
+                    <p class="text-sm italic mb-4">"Performance test (350k combinations): excel: 25 mins of spinning. duckdb: 1.2s"</p>
+                </div>
+            </div>
+            <div class="text-right mt-6">
+                <a href="#" class="text-sm font-semibold hover:opacity-70 transition-opacity">FOLLOW US →</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Join the Flock -->
+    <section class="py-20 px-6 bg-[#F4EFEA]">
+        <div class="max-w-4xl mx-auto flex flex-col lg:flex-row items-center gap-16">
+            <div class="flex-shrink-0">
+                <svg width="150" height="150" viewBox="0 0 150 150" fill="none">
+                    <path d="M30 50 Q30 30 50 30 L100 30 Q120 30 120 50 L120 90 Q120 110 100 110 L50 110 Q30 110 30 90 Z" fill="#5CB8E6"/>
+                </svg>
+            </div>
+
+            <div>
+                <h2 class="text-4xl font-bold tracking-tight mb-4">JOIN THE FLOCK</h2>
+                <a href="#" class="text-lg underline hover:opacity-70 transition-opacity font-semibold">
+                    CHAT WITH US ON SLACK ↗
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer / Newsletter -->
+    <footer class="bg-[#FFD500] py-20 px-6">
+        <div class="max-w-2xl mx-auto text-center">
+            <div class="text-xs font-bold tracking-widest mb-2">SUBSCRIBE</div>
+            <h2 class="text-4xl font-bold tracking-tight mb-8">SUBSCRIBE TO OUR NEWSLETTER</h2>
+
+            <div class="flex flex-wrap gap-3 justify-center mb-6">
+                <input type="email" placeholder="E-mail" class="flex-1 max-w-md px-5 py-3 border-2 border-[#383838] text-base focus:outline-none focus:ring-2 focus:ring-[#383838]">
+                <button class="btn-white px-8 py-3 rounded-none font-bold text-base uppercase">
+                    SUBMIT
+                </button>
+            </div>
+
+            <label class="flex items-center justify-center gap-3 cursor-pointer">
+                <input type="checkbox" checked class="custom-checkbox">
+                <span class="text-sm font-medium">Subscribe to other MotherDuck emails</span>
+            </label>
+
+            <div class="mt-16 flex justify-center">
+                <svg width="120" height="120" viewBox="0 0 120 120" fill="none">
+                    <rect x="20" y="30" width="80" height="60" fill="white" rx="8"/>
+                    <circle cx="60" cy="60" r="20" fill="#FF6B6B"/>
+                    <circle cx="95" cy="85" r="15" fill="#FFB6C1"/>
+                </svg>
+            </div>
+        </div>
+    </footer>
+</body>
+</html>
