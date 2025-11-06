@@ -1,0 +1,176 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+@import "tailwindcss";
+
+:root {
+  --background: #F4EFEA;
+  --foreground: #383838;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+/* Button styles with shadow effect */
+.btn-blue {
+  background-color: #6FC2FF;
+  border: 2px solid #383838;
+  color: #383838;
+  position: relative;
+  transition: transform 120ms ease-in-out, box-shadow 120ms ease-in-out;
+}
+
+.btn-blue:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: 4px 4px 0px 0px #383838;
+}
+
+.btn-blue:active {
+  transform: translate(0, 0);
+  box-shadow: 2px 2px 0px 0px #383838;
+}
+
+.btn-white {
+  background-color: white;
+  border: 2px solid #383838;
+  color: #383838;
+  position: relative;
+  transition: transform 120ms ease-in-out, box-shadow 120ms ease-in-out;
+}
+
+.btn-white:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: 4px 4px 0px 0px #383838;
+}
+
+.btn-white:active {
+  transform: translate(0, 0);
+  box-shadow: 2px 2px 0px 0px #383838;
+}
+
+/* Custom checkbox */
+.custom-checkbox {
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  border: 2px solid #383838;
+  border-radius: 3px;
+  background: white;
+  cursor: pointer;
+  position: relative;
+  flex-shrink: 0;
+}
+
+.custom-checkbox:checked {
+  background: #383838;
+}
+
+.custom-checkbox:checked::after {
+  content: '✓';
+  position: absolute;
+  color: white;
+  font-size: 14px;
+  top: -2px;
+  left: 2px;
+  font-weight: bold;
+}
+
+/* Task item styles */
+.task-item {
+  background-color: white;
+}
+
+.task-item.dragging {
+  opacity: 0.5;
+}
+
+.task-item.completed {
+  opacity: 0.6;
+}
+
+.task-item.completed .task-text {
+  text-decoration: line-through;
+}
+
+/* Quadrant colors */
+.quadrant-urgent-important {
+  border-left: 4px solid #FF6B6B;
+}
+
+.quadrant-urgent-important:hover {
+  background-color: #FFE5E5 !important;
+}
+
+.quadrant-not-urgent-important {
+  border-left: 4px solid #6FC2FF;
+}
+
+.quadrant-not-urgent-important:hover {
+  background-color: #E5F4FF !important;
+}
+
+.quadrant-urgent-not-important {
+  border-left: 4px solid #FFD500;
+}
+
+.quadrant-urgent-not-important:hover {
+  background-color: #FFF9D9 !important;
+}
+
+.quadrant-not-urgent-not-important {
+  border-left: 4px solid #4DD4D0;
+}
+
+.quadrant-not-urgent-not-important:hover {
+  background-color: #E0F7F6 !important;
+}
+
+/* Drop zone highlight */
+.drop-zone {
+  height: 300px;
+  overflow-y: auto;
+  transition: background-color 150ms ease-in-out;
+  padding-right: 8px;
+  scrollbar-width: thin;
+  scrollbar-color: #F4EFEA transparent;
+}
+
+/* Custom Scrollbar for Webkit browsers */
+.drop-zone::-webkit-scrollbar {
+  width: 6px;
+}
+
+.drop-zone::-webkit-scrollbar-track {
+  background: transparent;
+  margin: 4px 0;
+}
+
+.drop-zone::-webkit-scrollbar-thumb {
+  background: #F4EFEA;
+  border-radius: 3px;
+  transition: background-color 120ms ease-in-out;
+}
+
+.drop-zone::-webkit-scrollbar-thumb:hover {
+  background: #E6DFD8;
+}
+
+.drop-zone::-webkit-scrollbar-thumb:active {
+  background: #D9D1C9;
+}
+
+.drop-zone.drag-over {
+  background-color: #F4EFEA;
+  border: 2px dashed #383838;
+}
+
+/* Empty state */
+.empty-state {
+  opacity: 0.4;
+}
